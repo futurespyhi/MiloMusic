@@ -1,0 +1,22 @@
+# 环境变量文件
+.env
+
+# 虚拟环境目录
+.venv/
+venv/
+ENV/
+
+# Python缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 分发/打包
+dist/
+build/
+*.egg-info/
+
+# 本地开发配置
+.idea/
+.vscode/
+*.swp
