@@ -1,9 +1,12 @@
+import subprocess
+
 import gradio as gr
 import soundfile as sf
 from dataclasses import dataclass, field
 from typing import Any
 import xxhash
 import os
+import sys
 import groq
 import tempfile
 import numpy as np
@@ -12,7 +15,8 @@ from tools.groq_client import client as groq_client
 import spaces
 
 from tools.generate_lyrics import generate_structured_lyrics, format_lyrics_for_yue
-
+# You need to choose where to download your HuggingFace Model to ensure there will be enough space left
+os.environ["HF_HOME"] = "E:/huggingface_cache"
 
 @dataclass
 class AppState:
@@ -327,19 +331,104 @@ def generate_music_from_lyrics(state: AppState):
         # Format the structured lyrics into a string
         lyrics = format_lyrics_for_yue(structured_lyrics, state.genre, state.mood, state.theme)
 
-        print(lyrics)
+        print("Formatted lyrics generated: ", lyrics)
 
         # TODO 2: From the lyrics, generate music using a music generation model (YUE)
 
-        # Save temporary audio file
-        # tmp_file = f"/tmp/generated_music_{xxhash.xxh32(lyrics.encode()).hexdigest()}.wav"
-        # sf.write(tmp_file, audio_data, sample_rate)
+        # Creating temporary files and directories for processing
+        temp_dir = tempfile.gettempdir()
+        hash_id = xxhash.xxh32(lyrics.encode()).hexdigest()
+        genre_file = os.path.join(temp_dir, f"genre_{hash_id}.txt")
+        lyrics_file = os.path.join(temp_dir, f"lyrics_{hash_id}.txt")
+        output_dir = os.path.join(temp_dir, f"yue_output_{hash_id}")
+        os.makedirs(output_dir, exist_ok=True)
 
-        # return tmp_file, f"Music generated for your {state.genre} song with {state.mood} mood about {state.theme}!"
+        # Separate formatted lyrics into style and lyrics
+        parts = lyrics.split("[Title]")
+        genre_part = parts[0].strip()
+        lyrics_part = "[Title]" + parts[1].strip() if len(parts) > 1 else lyrics
+
+        # Write genre and lyrics to separate files
+        with open(genre_file, "w", encoding="utf-8") as f:
+            f.write(genre_part)
+
+        with open(lyrics_file, "w", encoding="utf-8") as f:
+            f.write(lyrics_part)
+
+        # Get absolute paths for files to pass to the subprocess
+        abs_genre_file = os.path.abspath(genre_file)
+        abs_lyrics_file = os.path.abspath(lyrics_file)
+        abs_output_dir = os.path.abspath(output_dir)
+
+        # Get YuEGP path
+        yuegp_path = os.environ.get("YUEGP_PATH", os.path.abspath("YuEGP"))
+        inference_dir = os.path.join(yuegp_path, "inference")
+
+        # Save current working directory
+        current_dir = os.getcwd()
+
+        try:
+            # Change to inference directory before running the command
+            os.chdir(inference_dir)
+            print(f"Changed working directory to: {inference_dir}")
+
+            # Build command - use relative paths from inference directory
+            cmd = [
+                sys.executable,  # Use current Python interpreter
+                "gradio_server.py",  # Just the script name since we're in the right directory
+                "--cuda_idx", "0",
+                "--genre_txt", abs_genre_file,  # Use absolute paths for input files
+                "--lyrics_txt", abs_lyrics_file,
+                "--run_n_segments", "1",
+                "--output_dir", abs_output_dir,
+                "--max_new_tokens", "1500",
+                "--profile", "5",  # Use low VRAM profile
+                "--sdpa"  # 添加这个参数禁用FlashAttention2
+            ]
+
+            # Print command for debugging
+            print("Executing command:", " ".join(cmd))
+
+            # Run inference process
+            print("Starting music generation... (this may take several minutes)")
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = process.communicate()
+
+            try:
+                stdout_text = stdout.decode('utf-8')
+            except UnicodeDecodeError:
+                stdout_text = stdout.decode('utf-8', errors='replace')
+
+            try:
+                stderr_text = stderr.decode('utf-8')
+            except UnicodeDecodeError:
+                stderr_text = stderr.decode('utf-8', errors='replace')
+            print(f"Standard output: {stdout_text}")
+
+            if process.returncode != 0:
+                print(f"Error output: {stderr_text}")
+                raise Exception(f"Music generation failed (return code: {process.returncode}): {stderr_text}")
+        finally:
+            # Restore original working directory, even if an error occurs
+            os.chdir(current_dir)
+            print(f"Restored working directory to: {current_dir}")
+
+            # Find generated audio file in output directory
+        audio_files = [f for f in os.listdir(output_dir) if f.endswith((".wav", ".mp3"))]
+        if not audio_files:
+            raise Exception("No audio files found in output directory")
+
+        output_file = os.path.join(output_dir, audio_files[0])
+        print(f"Music generation successful: {output_file}")
+
+        # Return path to generated audio file and success message
+        return output_file, f"Music generated for your {state.genre} song with {state.mood} mood about {state.theme}!"
 
     except Exception as e:
         error_msg = f"Error generating music: {str(e)}"
         print(error_msg)
+        import traceback
+        traceback.print_exc()
         return None, error_msg
 
 
