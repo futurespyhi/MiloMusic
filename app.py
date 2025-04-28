@@ -4,6 +4,7 @@ import gradio as gr
 import soundfile as sf
 from dataclasses import dataclass, field
 from typing import Any
+import gradio as gr
 import xxhash
 import os
 import sys
@@ -13,6 +14,8 @@ import numpy as np
 
 from tools.groq_client import client as groq_client
 import spaces
+import xxhash
+from openai import OpenAI
 
 from tools.generate_lyrics import generate_structured_lyrics, format_lyrics_for_yue
 # You need to choose where to download your HuggingFace Model to ensure there will be enough space left
@@ -120,15 +123,26 @@ def transcribe_audio(client, file_name):
 
     try:
         with open(file_name, "rb") as audio_file:
-            response = client.audio.transcriptions.with_raw_response.create(
-                model="whisper-large-v3-turbo",
-                file=("audio.wav", audio_file),
-                response_format="verbose_json",
-                language="en",
-            )
-            completion = process_whisper_response(response.parse())
+            # write audio_file in audio.wav
+            with open("audio.wav", "wb") as f:
+                f.write(audio_file.read())
 
-        return completion
+            # response = client.audio.transcriptions.with_raw_response.create(
+            #     model="whisper-large-v3-turbo",
+            #     file=("audio.wav", audio_file),
+            #     response_format="verbose_json",
+            #     language="en",
+            # )
+            client_openai = OpenAI()
+            response = client_openai.audio.transcriptions.create(
+                model="gpt-4o-transcribe", 
+                file=open("audio.wav", "rb"),
+                response_format="text",
+            )
+            print("RESPONSE", response)
+
+
+        return response
     except Exception as e:
         print(f"Error in transcription: {e}")
         return f"Error in transcription: {str(e)}"
