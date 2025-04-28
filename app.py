@@ -21,6 +21,10 @@ from tools.generate_lyrics import generate_structured_lyrics, format_lyrics_for_
 # You need to choose where to download your HuggingFace Model to ensure there will be enough space left
 os.environ["HF_HOME"] = "E:/huggingface_cache"
 
+import torch
+print(torch.cuda.is_available())  # Check if CUDA is enabled
+print(torch.__version__)  # Check the PyTorch version
+
 @dataclass
 class AppState:
     """

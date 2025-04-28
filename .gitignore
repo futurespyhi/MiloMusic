@@ -20,6 +20,3 @@ build/
 .idea/
 .vscode/
 *.swp
-
-# 忽略整个 YuEGP 文件夹
-/YuEGP/
