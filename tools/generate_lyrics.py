@@ -1,12 +1,13 @@
-from google import genai
-import os
-from typing import List
-from schemas.lyrics import LyricsSection, SongStructure
-from dotenv import load_dotenv
 import json
-
+import os
 import sys
 from pathlib import Path
+from typing import List
+
+from dotenv import load_dotenv
+from google import genai
+
+from schemas.lyrics import LyricsSection, SongStructure
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 

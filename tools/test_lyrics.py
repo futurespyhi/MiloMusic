@@ -1,12 +1,11 @@
-import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add the project root to Python path
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
 
-from tools.generate_lyrics import generate_structured_lyrics, format_lyrics, format_lyrics_for_yue
+from tools.generate_lyrics import generate_structured_lyrics, format_lyrics
 from dotenv import load_dotenv
 
 load_dotenv()

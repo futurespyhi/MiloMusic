@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import List, Optional
 import enum
+from typing import List
+
+from pydantic import BaseModel
 
 
 class SectionType(enum.Enum):

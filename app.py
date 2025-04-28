@@ -1,15 +1,11 @@
-import gradio as gr
-import soundfile as sf
 from dataclasses import dataclass, field
 from typing import Any
-import xxhash
-import os
-import groq
-import tempfile
-import numpy as np
 
-from tools.groq_client import client as groq_client
+import gradio as gr
+import groq
+import soundfile as sf
 import spaces
+import xxhash
 
 from tools.generate_lyrics import generate_structured_lyrics, format_lyrics_for_yue
 
