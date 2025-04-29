@@ -1,32 +1,29 @@
+import os
 import subprocess
-
-import gradio as gr
-import soundfile as sf
+import sys
 from dataclasses import dataclass, field
 from typing import Any
-import gradio as gr
-import xxhash
-import os
-import sys
-import groq
-import tempfile
-import numpy as np
 
-from tools.groq_client import client as groq_client
+import gradio as gr
+import groq
+import soundfile as sf
 import spaces
 import xxhash
 from openai import OpenAI
 
 from tools.generate_lyrics import generate_structured_lyrics, format_lyrics_for_yue
+
 # You need to choose where to download your HuggingFace Model to ensure there will be enough space left
 os.environ["HF_HOME"] = "E:/huggingface_cache"
 
 import torch
+
 print(torch.cuda.is_available())
 print(torch.cuda.device_count())
 print(torch.cuda.current_device())
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.get_device_properties(0))
+
 
 @dataclass
 class AppState:
@@ -142,12 +139,11 @@ def transcribe_audio(client, file_name):
             # )
             client_openai = OpenAI()
             response = client_openai.audio.transcriptions.create(
-                model="gpt-4o-transcribe", 
+                model="gpt-4o-transcribe",
                 file=open("audio.wav", "rb"),
                 response_format="text",
             )
             print("RESPONSE", response)
-
 
         return response
     except Exception as e:
@@ -348,7 +344,6 @@ def generate_music_from_lyrics(state: AppState):
             mood=state.mood,
             theme=state.theme
         )
-
         # Format the structured lyrics into a string
         lyrics = format_lyrics_for_yue(structured_lyrics, state.genre, state.mood, state.theme)
 
@@ -366,8 +361,8 @@ def generate_music_from_lyrics(state: AppState):
 
         # Separate formatted lyrics into style and lyrics
         parts = lyrics.split("[Title]")
-        genre_part = parts[0].strip()
-        lyrics_part = "[Title]" + parts[1].strip() if len(parts) > 1 else lyrics
+        genre_part = parts[0].strip().split("[Genre]")[1]
+        lyrics_part = "\n".join((parts[1].strip() if len(parts) > 1 else lyrics).split("\n")[2:])
 
         # Write genre and lyrics to separate files
         with open(genre_file, "w", encoding="utf-8") as f:
@@ -398,14 +393,17 @@ def generate_music_from_lyrics(state: AppState):
                 sys.executable,  # Use current Python interpreter
                 "infer.py",  # Just the script name since we're in the right directory
                 "--cuda_idx", "0",
+                "--stage1_model", "m-a-p/YuE-s1-7B-anneal-en-cot",
+                "--stage2_model", "m-a-p/YuE-s2-1B-general",
                 "--genre_txt", abs_genre_file,  # Use absolute paths for input files
                 "--lyrics_txt", abs_lyrics_file,
                 "--run_n_segments", "2",
+                "--stage2_batch_size", "4",
                 "--output_dir", abs_output_dir,
                 "--max_new_tokens", "3000",
                 "--profile", "1",
                 "--sdpa",  # 添加这个参数禁用FlashAttention2
-                "--verbose", "3", # Verbose output
+                "--verbose", "3",  # Verbose output
                 "--prompt_start_time", "0",
                 "--prompt_end_time", "30",
             ]

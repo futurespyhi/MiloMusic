@@ -1,12 +1,13 @@
-from google import genai
-import os
-from typing import List
-from schemas.lyrics import LyricsSection, SongStructure
-from dotenv import load_dotenv
 import json
-
+import os
 import sys
 from pathlib import Path
+from typing import List
+
+from dotenv import load_dotenv
+from google import genai
+
+from schemas.lyrics import LyricsSection, SongStructure
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
@@ -54,8 +55,9 @@ Create song lyrics with these parameters:
 - Genre: {genre}
 - Mood: {mood}
 - Theme: {theme}
+"""
 
-Generate a complete song with the following structure:
+    system_instruction = """Generate a complete song with the following structure:
 1. A title
 2. At least one verse
 3. A chorus
@@ -69,8 +71,10 @@ The output must follow the exact JSON structure with these section types: VERSE,
         config = {
             'response_mime_type': 'application/json',
             'response_schema': SongStructure,
-            'system_instruction': prompt
+            'system_instruction': system_instruction
         }
+
+        print(prompt)
 
         # Pass the prompt as a single string instead of conversation list
         response = genai_client.models.generate_content(

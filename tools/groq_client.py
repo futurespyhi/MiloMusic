@@ -1,6 +1,7 @@
 import os
-import groq
+
 import dotenv
+import groq
 
 # Load environment variables from .env file
 dotenv.load_dotenv()
