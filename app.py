@@ -396,15 +396,18 @@ def generate_music_from_lyrics(state: AppState):
             # Build command - use relative paths from inference directory
             cmd = [
                 sys.executable,  # Use current Python interpreter
-                "gradio_server.py",  # Just the script name since we're in the right directory
+                "infer.py",  # Just the script name since we're in the right directory
                 "--cuda_idx", "0",
                 "--genre_txt", abs_genre_file,  # Use absolute paths for input files
                 "--lyrics_txt", abs_lyrics_file,
-                "--run_n_segments", "1",
+                "--run_n_segments", "2",
                 "--output_dir", abs_output_dir,
-                "--max_new_tokens", "1500",
-                "--profile", "5",  # Use low VRAM profile
-                "--sdpa"  # 添加这个参数禁用FlashAttention2
+                "--max_new_tokens", "3000",
+                "--profile", "1",
+                "--sdpa",  # 添加这个参数禁用FlashAttention2
+                "--verbose", "3", # Verbose output
+                "--prompt_start_time", "0",
+                "--prompt_end_time", "30",
             ]
 
             # Print command for debugging
