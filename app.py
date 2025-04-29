@@ -1,29 +1,32 @@
-import os
 import subprocess
-import sys
-from dataclasses import dataclass, field
-from typing import Any
 
 import gradio as gr
-import groq
 import soundfile as sf
+from dataclasses import dataclass, field
+from typing import Any
+import gradio as gr
+import xxhash
+import os
+import sys
+import groq
+import tempfile
+import numpy as np
+
+from tools.groq_client import client as groq_client
 import spaces
 import xxhash
 from openai import OpenAI
 
 from tools.generate_lyrics import generate_structured_lyrics, format_lyrics_for_yue
-
 # You need to choose where to download your HuggingFace Model to ensure there will be enough space left
 os.environ["HF_HOME"] = "E:/huggingface_cache"
 
 import torch
-
 print(torch.cuda.is_available())
 print(torch.cuda.device_count())
 print(torch.cuda.current_device())
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.get_device_properties(0))
-
 
 @dataclass
 class AppState:
@@ -144,6 +147,7 @@ def transcribe_audio(client, file_name):
                 response_format="text",
             )
             print("RESPONSE", response)
+
 
         return response
     except Exception as e:
@@ -403,7 +407,7 @@ def generate_music_from_lyrics(state: AppState):
                 "--max_new_tokens", "3000",
                 "--profile", "1",
                 "--sdpa",  # 添加这个参数禁用FlashAttention2
-                "--verbose", "3",  # Verbose output
+                "--verbose", "3", # Verbose output
                 "--prompt_start_time", "0",
                 "--prompt_end_time", "30",
             ]
