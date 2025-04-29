@@ -22,8 +22,11 @@ from tools.generate_lyrics import generate_structured_lyrics, format_lyrics_for_
 os.environ["HF_HOME"] = "E:/huggingface_cache"
 
 import torch
-print(torch.cuda.is_available())  # Check if CUDA is enabled
-print(torch.__version__)  # Check the PyTorch version
+print(torch.cuda.is_available())
+print(torch.cuda.device_count())
+print(torch.cuda.current_device())
+print(torch.cuda.get_device_name(0))
+print(torch.cuda.get_device_properties(0))
 
 @dataclass
 class AppState:
@@ -354,7 +357,7 @@ def generate_music_from_lyrics(state: AppState):
         # TODO 2: From the lyrics, generate music using a music generation model (YUE)
 
         # Creating temporary files and directories for processing
-        temp_dir = tempfile.gettempdir()
+        temp_dir = os.getcwd()
         hash_id = xxhash.xxh32(lyrics.encode()).hexdigest()
         genre_file = os.path.join(temp_dir, f"genre_{hash_id}.txt")
         lyrics_file = os.path.join(temp_dir, f"lyrics_{hash_id}.txt")
