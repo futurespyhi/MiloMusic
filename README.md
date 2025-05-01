@@ -1,8 +1,10 @@
 # MiloMusic 🎵
 
-<p align="center">
-  <img src="assets/milomusic-logo.png" alt="MiloMusic Logo" width="200"/>
-</p>
+[//]: # (<p align="center">)
+
+[//]: # (  <img src="assets/milomusic-logo.png" alt="MiloMusic Logo" width="200"/>)
+
+[//]: # (</p>)
 
 ## 🦙 AI-Powered Music Creation for Everyone
 
