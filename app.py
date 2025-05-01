@@ -22,9 +22,6 @@ from tools.generate_lyrics import generate_structured_lyrics, format_lyrics_for_
 os.environ["HF_HOME"] = "E:/huggingface_cache"
 
 import torch
-print(torch.cuda.is_available())
-print(torch.cuda.device_count())
-print(torch.cuda.current_device())
 print(torch.cuda.get_device_name(0))
 print(torch.cuda.get_device_properties(0))
 
