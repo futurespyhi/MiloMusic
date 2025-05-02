@@ -36,7 +36,7 @@ MiloMusic employs a sophisticated multi-model pipeline to deliver a seamless mus
 
 - **LLM Models**:
   - `gpt4o-transcribe` - For speech-to-text conversion
-  - `llama-4-scout-17b-16e-instruct` - For creative conversation and lyrics generation
+  - `fine-tuned llama-4-scout-17b-16e-instruct` - For creative conversation and better lyrics generation
   - `Gemini flash 2.0` - For lyrics structuring
   - `YuE` - For music generation
 - **UI**: Gradio
