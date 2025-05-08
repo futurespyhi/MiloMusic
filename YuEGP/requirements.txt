@@ -1,0 +1,14 @@
+torch
+omegaconf
+torchaudio
+einops
+numpy
+transformers==4.48.1
+sentencepiece
+tqdm
+tensorboard
+descript-audiotools>=0.7.2
+descript-audio-codec
+mmgp==3.1.4-post15
+scipy
+gradio
